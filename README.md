@@ -1,48 +1,51 @@
-# HLCV-Project — OCR-Guided and Boundary-Aware Tampered Text Localization
+# Text-Aware Tampered Text Localization
 
-Course project (High-Level Computer Vision). We extend the **DTD** document
-tampering detector (DocTamper) with document-specific priors and
-imbalance/boundary-aware supervision, to better localize **small** forged text
-regions.
+Document forgery localization that extends the **DTD** detector (DocTamper) with
+document-specific priors and imbalance/boundary-aware supervision, to better
+localize small forged text regions.
 
 Team: Samira Abedini (7072848), Pardis Rahbarsooreh (7059149).
 
-## Idea
+## Method
 
-Keep DTD's RGB + frequency backbone unchanged, and add:
+Keep DTD's RGB + DCT-frequency backbone, and add:
 
-1. an **OCR-derived text prior** `M_text` (where text is) fused into the decoder
-   as soft guidance toward regions where tampering is likely;
-2. **imbalance-aware** (Dice) and **boundary-aware** supervision on top of the
-   cross-entropy loss, for small regions and sharp glyph edges.
+1. an **OCR-derived text prior** `M_text` fused into the decoder as soft guidance
+   toward text regions, where tampering is most likely;
+2. **imbalance-aware** (Dice) and **boundary-aware** losses on top of
+   cross-entropy, for small regions and sharp glyph edges.
 
-Following TA feedback, the OCR branch is treated as a **region-proposal** stage
-with a high-recall target, and is evaluated on its own (a missed tampered region
-cannot be recovered downstream). The stretch goal shares one backbone — an OCR
-head on the Visual Perception Head features instead of a second network.
+The OCR prior is also evaluated on its own as a region-proposal stage — its
+recall / coverage of the tampered regions — since a missed region cannot be
+recovered downstream.
 
 ## Repo layout
 
 ```
 src/
-  losses.py      # CE + Dice + Boundary combined loss (CombinedTamperLoss)
-  text_prior.py  # OCR boxes -> binary M_text mask (OCRTextMasker)
-  fusion.py      # TextPriorFusion: F_hat_l = phi_l([F_l, M_l])
-  ocr_eval.py    # OCRCoverageMeter: recall/coverage of the OCR prior
+  losses.py      CombinedTamperLoss (CE + Dice + boundary)
+  text_prior.py  OCR boxes -> binary M_text mask (OCRTextMasker)
+  fusion.py      TextPriorFusion: F_hat_l = phi_l([F_l, M_l])
+  ocr_eval.py    OCRCoverageMeter: recall / coverage of the OCR prior
+notebooks/
+  ocr_prior_recall_check.ipynb   evaluate the OCR prior (recall, dilate sweep, misses)
+  phase1_train.ipynb             train (baseline / +OCR) and evaluate Pixel-F1 / IoU / AUC
 docs/
-  INTEGRATION.md # how to wire src/ into DocTamper, on Colab
+  INTEGRATION.md
 requirements.txt
 ```
 
-## How it runs
+## Running
 
-These modules are self-contained and plug into the DocTamper model, which is
-cloned **on Colab** (it is license-restricted and ships untrusted serialized
-files, so it is not vendored here). See [docs/INTEGRATION.md](docs/INTEGRATION.md).
+Run the notebooks on Colab (GPU). They clone the DocTamper repo, build the data
+pipeline, and plug in the modules from `src/`. The training notebook reports
+Pixel-F1, precision, recall, IoU, and AUC; the OCR notebook reports the prior's
+recall / coverage. See [docs/INTEGRATION.md](docs/INTEGRATION.md) for how `src/`
+attaches to the DocTamper model.
 
 ## Data & weights — do not commit
 
 DocTamper datasets and checkpoints are license-restricted (no redistribution)
-**and** are untrusted executable content (pickle / `torch.load`). They are kept
-out of git via `.gitignore` and stay in Colab/Drive only. Inspect upstream
-pickles with `python -m pickletools`, never by loading them.
+and are untrusted serialized content (pickle / `torch.load`). They are kept out
+of git via `.gitignore` and stay in Colab/Drive only. Inspect upstream pickles
+with `python -m pickletools`, never by loading them.
