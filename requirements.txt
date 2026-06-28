@@ -1,0 +1,11 @@
+# Lightweight deps for the NOVEL modules in src/.
+# The DTD backbone runs inside the DocTamper environment on Colab, which pins
+# its own (older) torch/mmcv stack -- see docs/INTEGRATION.md. Do not pin torch
+# here; use whatever the DocTamper env provides.
+numpy
+opencv-python-headless
+
+# OCR detector for the text prior (choose ONE; both ship pretrained models).
+# Installed on Colab only, not required to import src/.
+# easyocr
+# paddleocr

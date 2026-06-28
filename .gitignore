@@ -1,0 +1,42 @@
+# --- Never commit datasets, weights, or serialized/executable blobs ---
+# DocTamper data & checkpoints are license-restricted (no redistribution) AND
+# are untrusted executable content (pickle / torch.load). Keep them OUT of git.
+*.pk
+*.pkl
+*.pickle
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.mdb
+*.lmdb
+*.zip
+*.tar
+*.tar.gz
+*.7z
+
+# Dataset / checkpoint directories
+data/
+datasets/
+DocTamperV1*/
+TFR*/
+checkpoints/
+pths/
+weights/
+
+# The DocTamper clone itself should not be vendored into this repo
+DocTamper/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+.venv/
+venv/
+env/
+
+# --- OS / editor ---
+.DS_Store
+.vscode/
+.idea/
