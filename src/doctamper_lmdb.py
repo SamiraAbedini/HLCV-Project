@@ -173,24 +173,21 @@ def validate_manifest_against_lmdb(manifest: Mapping, data_root: str | Path) -> 
         return errors
 
     env = open_lmdb(lmdb_dir)
-    try:
-        for sample in samples:
-            idx = int(sample["index"])
-            sid = sample_id(str(source_split), idx)
-            if sample.get("sample_id") != sid:
-                errors.append(f"sample index {idx} has non-standard sample_id {sample.get('sample_id')}")
-            if not lmdb_pair_exists(env, idx):
-                errors.append(f"missing image/label pair for {sid}")
-                continue
-            try:
-                image, mask = read_lmdb_image_and_mask(env, idx)
-            except Exception as exc:  # pragma: no cover - reports external data issues
-                errors.append(f"failed to read {sid}: {exc}")
-                continue
-            if image.shape[:2] != mask.shape:
-                errors.append(f"image/mask shape mismatch for {sid}: {image.shape[:2]} vs {mask.shape}")
-    finally:
-        env.close()
+    for sample in samples:
+        idx = int(sample["index"])
+        sid = sample_id(str(source_split), idx)
+        if sample.get("sample_id") != sid:
+            errors.append(f"sample index {idx} has non-standard sample_id {sample.get('sample_id')}")
+        if not lmdb_pair_exists(env, idx):
+            errors.append(f"missing image/label pair for {sid}")
+            continue
+        try:
+            image, mask = read_lmdb_image_and_mask(env, idx)
+        except Exception as exc:  # pragma: no cover - reports external data issues
+            errors.append(f"failed to read {sid}: {exc}")
+            continue
+        if image.shape[:2] != mask.shape:
+            errors.append(f"image/mask shape mismatch for {sid}: {image.shape[:2]} vs {mask.shape}")
     return errors
 
 
