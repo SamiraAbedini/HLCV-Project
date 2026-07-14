@@ -114,11 +114,18 @@ def main() -> int:
 
     metadata = _load_tamper_types(args.tamper_types_pickle, args.allow_unsafe_pickle)
     train_pool = _shuffled_indices(train_n, args.seed)
-    test_pool = _shuffled_indices(test_n, args.seed + 1)
-
-    train_idx = train_pool[: args.train_size]
-    val_idx = train_pool[args.train_size : args.train_size + args.val_size]
-    test_idx = test_pool[: args.test_size]
+    if args.train_source == args.test_source:
+        needed = args.train_size + args.val_size + args.test_size
+        if needed > train_n:
+            raise SystemExit(f"Requested train+val+test={needed}, but {args.train_source} has {train_n}")
+        train_idx = train_pool[: args.train_size]
+        val_idx = train_pool[args.train_size : args.train_size + args.val_size]
+        test_idx = train_pool[args.train_size + args.val_size : needed]
+    else:
+        test_pool = _shuffled_indices(test_n, args.seed + 1)
+        train_idx = train_pool[: args.train_size]
+        val_idx = train_pool[args.train_size : args.train_size + args.val_size]
+        test_idx = test_pool[: args.test_size]
 
     manifests = [
         _build_manifest("train", args.train_source, train_idx, args.seed, metadata),
