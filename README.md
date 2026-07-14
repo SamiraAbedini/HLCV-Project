@@ -30,8 +30,11 @@ src/
 notebooks/
   ocr_prior_recall_check.ipynb   evaluate the OCR prior (recall, dilate sweep, misses)
   phase1_train.ipynb             train (baseline / +OCR) and evaluate Pixel-F1 / IoU / AUC
+  fcd_debug_tesseract_colab.ipynb quick Colab smoke test; not final science
+  main_train_test_tesseract_colab.ipynb main reduced TrainingSet/TestingSet workflow
 docs/
   INTEGRATION.md
+  COLAB_WORKFLOWS.md
 requirements.txt
 ```
 
@@ -42,6 +45,11 @@ pipeline, and plug in the modules from `src/`. The training notebook reports
 Pixel-F1, precision, recall, IoU, and AUC; the OCR notebook reports the prior's
 recall / coverage. See [docs/INTEGRATION.md](docs/INTEGRATION.md) for how `src/`
 attaches to the DocTamper model.
+
+For the current Tesseract workflow, start with
+[docs/COLAB_WORKFLOWS.md](docs/COLAB_WORKFLOWS.md). Use the FCD notebook only as
+a smoke test, then use the main TrainingSet/TestingSet notebook for reportable
+reduced experiments.
 
 ## Data & weights — do not commit
 
