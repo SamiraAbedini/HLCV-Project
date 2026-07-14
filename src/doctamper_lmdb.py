@@ -19,6 +19,8 @@ from typing import Iterable, List, Mapping, Sequence
 
 import numpy as np
 
+_LMDB_ENV_CACHE = {}
+
 
 def sample_id(source_split: str, index: int) -> str:
     """Stable ID used in manifests and caches."""
@@ -103,14 +105,19 @@ def get_lmdb_num_samples(lmdb_dir: str | Path) -> int:
 def open_lmdb(lmdb_dir: str | Path):
     """Open a DocTamper LMDB read-only."""
     lmdb = _require_lmdb()
-    return lmdb.open(
-        str(lmdb_dir),
+    path = str(Path(lmdb_dir).resolve())
+    if path in _LMDB_ENV_CACHE:
+        return _LMDB_ENV_CACHE[path]
+    env = lmdb.open(
+        path,
         readonly=True,
         lock=False,
         readahead=False,
         meminit=False,
         max_readers=64,
     )
+    _LMDB_ENV_CACHE[path] = env
+    return env
 
 
 def lmdb_pair_exists(env, index: int) -> bool:
