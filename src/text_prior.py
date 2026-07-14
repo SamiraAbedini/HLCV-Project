@@ -56,7 +56,12 @@ def polygons_to_mask(
         raise ImportError("polygons_to_mask requires opencv (available on Colab).")
     mask = np.zeros((height, width), dtype=np.uint8)
     for poly in polygons:
-        pts = np.asarray(poly, dtype=np.int32).reshape(-1, 1, 2)
+        pts = np.asarray(poly, dtype=np.float32)
+        if pts.size == 0:
+            continue
+        pts[:, 0] = np.clip(pts[:, 0], 0, width - 1)
+        pts[:, 1] = np.clip(pts[:, 1], 0, height - 1)
+        pts = np.rint(pts).astype(np.int32).reshape(-1, 1, 2)
         cv2.fillPoly(mask, [pts], 1)
     return mask
 
@@ -88,7 +93,7 @@ class OCRTextMasker:
 
     def __call__(self, image: np.ndarray) -> np.ndarray:
         height, width = image.shape[:2]
-        boxes = self.detector(image)
+        boxes = self.detector(image) or []
         if self.polygon:
             mask = polygons_to_mask(boxes, height, width)
         else:

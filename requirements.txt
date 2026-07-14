@@ -8,4 +8,5 @@ opencv-python-headless
 # OCR detector for the text prior (choose ONE; both ship pretrained models).
 # Installed on Colab only, not required to import src/.
 # easyocr
+# pytesseract   # also install the system tesseract executable
 # paddleocr
