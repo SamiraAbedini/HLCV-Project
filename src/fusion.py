@@ -47,7 +47,12 @@ class TextPriorFusion(nn.Module):
             nn.Conv2d(mid, in_channels, kernel_size=1, bias=False),
             nn.BatchNorm2d(in_channels),
         )
-        self.act = nn.ReLU(inplace=True)
+        # No activation after the residual add: when this module is inserted into a *frozen*
+        # pretrained network, a trailing ReLU would clip the negative half of the incoming
+        # feature, so the module could never reduce to the identity (measured cost on DTD:
+        # 0.78 -> 0.68 Pixel-F1). Keeping it linear lets a zero-initialised block reproduce
+        # `feat` exactly, which is what makes identity-init + residual training work.
+        self.act = nn.Identity() if residual else nn.ReLU(inplace=True)
         self.residual = residual
 
     def forward(self, feat: torch.Tensor, text_mask: torch.Tensor) -> torch.Tensor:
@@ -61,3 +66,9 @@ class TextPriorFusion(nn.Module):
         if self.residual:
             out = out + feat
         return self.act(out)
+
+    def zero_init(self) -> None:
+        """Make the residual branch output 0 so the module starts as an exact identity."""
+        last = self.block[-1]
+        nn.init.zeros_(last.weight)
+        nn.init.zeros_(last.bias)
