@@ -106,6 +106,10 @@ def build_components(args: argparse.Namespace):
     from torch.cuda.amp import autocast
     from torch.utils.data import DataLoader
 
+    doctamper_models = Path(args.doctamper_dir) / "models"
+    if str(doctamper_models) not in sys.path:
+        sys.path.insert(0, str(doctamper_models))
+
     from dtd import seg_dtd
     from src.doctamper_dataset import ManifestDocTamperDataset
     from src.fusion import TextPriorFusion
