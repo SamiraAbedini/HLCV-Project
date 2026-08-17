@@ -106,6 +106,16 @@ def build_components(args: argparse.Namespace):
     from torch.cuda.amp import autocast
     from torch.utils.data import DataLoader
 
+    if not getattr(torch.load, "_hlcv_weights_only_compat", False):
+        original_torch_load = torch.load
+
+        def torch_load_compat(*load_args, **load_kwargs):
+            load_kwargs.setdefault("weights_only", False)
+            return original_torch_load(*load_args, **load_kwargs)
+
+        torch_load_compat._hlcv_weights_only_compat = True
+        torch.load = torch_load_compat
+
     doctamper_models = Path(args.doctamper_dir) / "models"
     if str(doctamper_models) not in sys.path:
         sys.path.insert(0, str(doctamper_models))
