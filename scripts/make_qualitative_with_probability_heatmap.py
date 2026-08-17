@@ -89,6 +89,7 @@ def copy_if_needed(src: Path, dst: Path) -> None:
 def setup_runtime(args: argparse.Namespace):
     project_dir = require(Path(args.project_dir), "project checkout")
     doctamper_models = require(Path(args.doctamper_dir) / "models", "DocTamper/models")
+    sys.path.insert(0, str(doctamper_models))
     sys.path.insert(0, str(project_dir))
     os.chdir(doctamper_models)
 
