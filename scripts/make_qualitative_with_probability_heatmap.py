@@ -13,6 +13,7 @@ Example:
 from __future__ import annotations
 
 import argparse
+import importlib
 import os
 from pathlib import Path
 import shutil
@@ -120,7 +121,13 @@ def build_components(args: argparse.Namespace):
     if str(doctamper_models) not in sys.path:
         sys.path.insert(0, str(doctamper_models))
 
-    from dtd import seg_dtd
+    dtd_module = importlib.import_module("dtd")
+    main_module = sys.modules.get("__main__")
+    if main_module is not None:
+        for name, value in vars(dtd_module).items():
+            if not name.startswith("_"):
+                setattr(main_module, name, value)
+    seg_dtd = dtd_module.seg_dtd
     from src.doctamper_dataset import ManifestDocTamperDataset
     from src.fusion import TextPriorFusion
     from src.ocr_backends import OCRConfig, create_ocr_backend
